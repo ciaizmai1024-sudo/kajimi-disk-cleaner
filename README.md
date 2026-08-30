@@ -61,12 +61,12 @@ dotnet build KajimiDiskCleaner.csproj -c Release
 
 ## GitHub 自动构建
 
-- 每次推送到 `main`：自动编译并在 Actions 页面生成 `KajimiDiskCleaner-win-x64-portable` 构建产物。
+- 每次推送到 `main`：自动编译、生成 Actions 构建产物，并按项目中的 `Version` 创建或更新 Release。
 - 每个 Pull Request：自动验证项目能否成功构建。
-- 推送 `v*` 标签（例如 `v1.2.0`）：自动创建 GitHub Release，并附加单文件 `KajimiDiskCleaner.exe`。
+- 推送 `v*` 标签（例如 `v1.2.0`）：同样会自动创建 GitHub Release，并附加单文件 `KajimiDiskCleaner.exe`。
 - 也可以在 Actions 页面手动运行 `Build Windows Portable EXE`。
 
-发布新版本：
+发布新版本时修改 `KajimiDiskCleaner.csproj` 中的 `<Version>`，提交到 `main` 即可。也可手动推送标签：
 
 ```powershell
 git tag -a v1.2.0 -m "v1.2.0"
