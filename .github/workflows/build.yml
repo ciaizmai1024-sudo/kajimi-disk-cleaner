@@ -46,16 +46,24 @@ jobs:
           path: dist/*.exe
           if-no-files-found: error
 
-      - name: Publish tagged release
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Publish versioned release
+        if: github.event_name == 'push'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $tag = "${{ github.ref_name }}"
+          if ("${{ github.ref }}".StartsWith("refs/tags/v")) {
+            $tag = "${{ github.ref_name }}"
+          } else {
+            [xml]$project = Get-Content .\KajimiDiskCleaner.csproj
+            $version = @($project.Project.PropertyGroup.Version | Where-Object { $_ })[0]
+            if (-not $version) { throw "Version is missing from KajimiDiskCleaner.csproj" }
+            $tag = "v$version"
+          }
           gh release view $tag 2>$null
           if ($LASTEXITCODE -ne 0) {
-            gh release create $tag --title "卡吉米磁盘清理助手 $tag" --generate-notes
+            gh release create $tag --target "${{ github.sha }}" --title "卡吉米磁盘清理助手 $tag" --generate-notes
           }
           gh release upload $tag .\dist\KajimiDiskCleaner.exe --clobber
+
 
