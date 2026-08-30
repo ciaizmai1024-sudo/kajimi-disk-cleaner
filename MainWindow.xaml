@@ -1,0 +1,94 @@
+<Window x:Class="DiskCleaner.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:DiskCleaner"
+        Title="卡吉米磁盘清理助手" Icon="assets/kajimi.png" Width="1180" Height="760" MinWidth="920" MinHeight="620" WindowStartupLocation="CenterScreen">
+  <Window.Resources>
+    <HierarchicalDataTemplate DataType="{x:Type local:DirectoryNode}" ItemsSource="{Binding Children}">
+      <Grid Margin="2"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <StackPanel Orientation="Horizontal"><TextBlock Text="📁" Margin="0,0,7,0"/><TextBlock Text="{Binding Name}"/></StackPanel>
+        <TextBlock Grid.Column="1" Text="{Binding Detail}" Foreground="{StaticResource Muted}" Margin="22,0,8,0"/>
+      </Grid>
+    </HierarchicalDataTemplate>
+  </Window.Resources>
+  <Grid>
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+
+    <Border Background="#14233D" Padding="24,17">
+      <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <StackPanel Orientation="Horizontal">
+          <Border Width="54" Height="54" CornerRadius="12" Background="#FFFFFF" Margin="0,0,13,0"><Image Source="assets/kajimi.png" Stretch="Uniform" Margin="2"/></Border>
+          <StackPanel VerticalAlignment="Center"><TextBlock Text="卡吉米磁盘清理助手" Foreground="White" FontSize="24" FontWeight="Bold"/><TextBlock Text="看清空间去向，按需释放磁盘空间" Foreground="#AFC2E4" Margin="0,4,0,0"/></StackPanel>
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+          <TextBlock Text="扫描磁盘" Foreground="#D7E3F8" VerticalAlignment="Center" Margin="0,0,8,0"/>
+          <ComboBox x:Name="DriveBox" MinWidth="190" Height="38" DisplayMemberPath="Label" SelectionChanged="DriveBox_SelectionChanged"/>
+          <Button x:Name="UpdateButton" Style="{StaticResource GhostButton}" Content="检查更新" Click="UpdateButton_Click"/>
+          <Button x:Name="AdminButton" Style="{StaticResource GhostButton}" Content="以管理员运行" Click="AdminButton_Click"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="1" Margin="16,12,16,0"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+      <Border Style="{StaticResource CardBorder}"><StackPanel><TextBlock Text="磁盘容量" Foreground="{StaticResource Muted}"/><TextBlock x:Name="TotalText" Text="—" FontSize="25" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
+      <Border Grid.Column="1" Style="{StaticResource CardBorder}"><StackPanel><TextBlock Text="可用空间" Foreground="{StaticResource Muted}"/><TextBlock x:Name="FreeText" Text="—" FontSize="25" FontWeight="Bold" Foreground="#16A36A" Margin="0,5,0,0"/></StackPanel></Border>
+      <Border Grid.Column="2" Style="{StaticResource CardBorder}"><StackPanel><TextBlock Text="本次扫描" Foreground="{StaticResource Muted}"/><TextBlock x:Name="ScanSizeText" Text="尚未扫描" FontSize="25" FontWeight="Bold" Foreground="{StaticResource Primary}" Margin="0,5,0,0"/></StackPanel></Border>
+    </Grid>
+
+    <TabControl Grid.Row="2" Margin="22,8,22,10" Background="Transparent" BorderThickness="0" x:Name="Tabs">
+      <TabItem Header="空间分析">
+        <Border Background="White" CornerRadius="0,10,10,10" Padding="14">
+          <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+            <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+              <StackPanel Orientation="Horizontal">
+                <Button x:Name="ScanButton" Content="开始扫描" Click="ScanButton_Click"/>
+                <Button x:Name="CancelScanButton" Content="停止" Style="{StaticResource GhostButton}" Click="CancelScanButton_Click" IsEnabled="False"/>
+                <TextBlock Text="大文件阈值" VerticalAlignment="Center" Margin="18,0,7,0" Foreground="{StaticResource Muted}"/>
+                <ComboBox x:Name="ThresholdBox" Width="105" Height="36" SelectedIndex="1"><ComboBoxItem Content="100 MB" Tag="104857600"/><ComboBoxItem Content="500 MB" Tag="524288000"/><ComboBoxItem Content="1 GB" Tag="1073741824"/></ComboBox>
+              </StackPanel>
+              <StackPanel Grid.Column="1" Orientation="Horizontal"><Button Content="打开所选目录" Style="{StaticResource GhostButton}" Click="OpenDirectory_Click"/><Button Content="手动清理所选目录" Background="#DC4C4C" Click="DeleteDirectory_Click"/></StackPanel>
+            </Grid>
+            <StackPanel Grid.Row="1" Margin="5,8"><ProgressBar x:Name="ScanProgress" Height="5" IsIndeterminate="True" Visibility="Collapsed"/><TextBlock x:Name="ScanStatusText" Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis" Margin="0,6,0,0"/></StackPanel>
+            <TreeView Grid.Row="2" x:Name="DirectoryTree" BorderThickness="1" BorderBrush="#E5EAF2" Padding="7" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling"/>
+          </Grid>
+        </Border>
+      </TabItem>
+
+      <TabItem Header="大文件">
+        <Border Background="White" CornerRadius="0,10,10,10" Padding="14">
+          <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+            <Grid Margin="0,0,0,9"><TextBlock x:Name="LargeSummaryText" Text="扫描后显示超过阈值的文件" VerticalAlignment="Center" Foreground="{StaticResource Muted}"/><StackPanel HorizontalAlignment="Right" Orientation="Horizontal"><Button Content="全选" Style="{StaticResource GhostButton}" Click="SelectAllLarge_Click"/><Button Content="打开位置" Style="{StaticResource GhostButton}" Click="OpenLargeLocation_Click"/><Button Content="移到回收站" Background="#DC4C4C" Click="DeleteLarge_Click"/></StackPanel></Grid>
+            <DataGrid Grid.Row="1" x:Name="LargeFilesGrid" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="False" SelectionMode="Single" GridLinesVisibility="Horizontal" HeadersVisibility="Column" BorderBrush="#E5EAF2">
+              <DataGrid.Columns>
+                <DataGridCheckBoxColumn Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="48"/>
+                <DataGridTextColumn Header="文件名" Binding="{Binding Name}" Width="2*" IsReadOnly="True"/>
+                <DataGridTextColumn Header="大小" Binding="{Binding SizeDisplay}" Width="120" IsReadOnly="True"/>
+                <DataGridTextColumn Header="修改时间" Binding="{Binding Modified, StringFormat=yyyy-MM-dd HH:mm}" Width="155" IsReadOnly="True"/>
+                <DataGridTextColumn Header="完整路径" Binding="{Binding FullPath}" Width="3*" IsReadOnly="True"/>
+              </DataGrid.Columns>
+            </DataGrid>
+          </Grid>
+        </Border>
+      </TabItem>
+
+      <TabItem Header="一键清理">
+        <Border Background="White" CornerRadius="0,10,10,10" Padding="14">
+          <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+            <Grid Margin="0,0,0,8"><StackPanel><TextBlock Text="常见垃圾文件" FontSize="17" FontWeight="Bold"/><TextBlock Text="勾选要处理的项目；浏览器运行时部分缓存可能被占用" Foreground="{StaticResource Muted}"/></StackPanel><Button HorizontalAlignment="Right" Content="重新分析" Style="{StaticResource GhostButton}" Click="AnalyzeCleanup_Click"/></Grid>
+            <ListView Grid.Row="1" x:Name="CleanupList" BorderBrush="#E5EAF2">
+              <ListView.View><GridView>
+                <GridViewColumn Width="45"><GridViewColumn.CellTemplate><DataTemplate><CheckBox IsChecked="{Binding IsSelected}" HorizontalAlignment="Center"/></DataTemplate></GridViewColumn.CellTemplate></GridViewColumn>
+                <GridViewColumn Header="项目" Width="210"><GridViewColumn.CellTemplate><DataTemplate><StackPanel Margin="0,5"><TextBlock Text="{Binding Name}" FontWeight="SemiBold"/><TextBlock Text="{Binding Description}" Foreground="{StaticResource Muted}" FontSize="11"/></StackPanel></DataTemplate></GridViewColumn.CellTemplate></GridViewColumn>
+                <GridViewColumn Header="可释放" DisplayMemberBinding="{Binding SizeDisplay}" Width="130"/>
+                <GridViewColumn Header="状态" DisplayMemberBinding="{Binding Status}" Width="190"/>
+              </GridView></ListView.View>
+            </ListView>
+            <Grid Grid.Row="2" Margin="0,10,0,0"><TextBlock x:Name="CleanupSummaryText" VerticalAlignment="Center" Foreground="{StaticResource Muted}"/><Button x:Name="CleanButton" HorizontalAlignment="Right" Content="清理已勾选项目" Click="CleanButton_Click"/></Grid>
+          </Grid>
+        </Border>
+      </TabItem>
+    </TabControl>
+
+    <Border Grid.Row="3" Background="#E9EEF6" Padding="22,7"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="提示：手动删除会先移入回收站；系统缓存清理为永久删除。扫描会跳过目录链接，避免重复统计。" Foreground="{StaticResource Muted}"/><Button Grid.Column="1" Style="{StaticResource GhostButton}" Padding="8,2" Margin="8,0" Content="联系：ciaizmai1024@gmail.com" Click="ContactButton_Click"/><TextBlock Grid.Column="2" x:Name="AdminStatus" VerticalAlignment="Center" Foreground="{StaticResource Muted}"/></Grid></Border>
+  </Grid>
+</Window>

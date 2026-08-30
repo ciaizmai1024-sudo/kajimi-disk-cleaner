@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>KajimiDiskCleaner</AssemblyName>
+    <RootNamespace>DiskCleaner</RootNamespace>
+    <ApplicationIcon>assets\kajimi.ico</ApplicationIcon>
+    <Version>1.2.0</Version>
+    <AssemblyTitle>卡吉米磁盘清理助手</AssemblyTitle>
+    <Product>卡吉米磁盘清理助手</Product>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="assets\kajimi.png" />
+  </ItemGroup>
+</Project>
